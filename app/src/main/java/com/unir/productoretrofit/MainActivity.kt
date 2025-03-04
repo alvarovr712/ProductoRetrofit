@@ -22,6 +22,7 @@ class MainActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
     private lateinit var adapter: ProductoAdapter
 
     private val productoList = mutableListOf<ProductoResponse>()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -29,8 +30,10 @@ class MainActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
         setContentView(binding.root)
 
         this.initRecyclerView()
+        this.displayData("products/")
+        this.fetchData("products/")
 
-        this.getProductoById("63740f5fe2c75d8744f80a2e")
+
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -47,39 +50,55 @@ class MainActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
 
     private fun getRetrofit() : Retrofit{
         return Retrofit.Builder()
-            .baseUrl("https://peticiones.online/api/products/")
+            .baseUrl("https://peticiones.online/api/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
     }
 
-    private fun getProductoById(query:String){
+    private fun fetchData(query:String){
 
         CoroutineScope(Dispatchers.IO).launch {
-            val url = query
-            val call: Response<ProductoResponse> = getRetrofit()
-                .create(ApiService::class.java)
-                .getById(url)
 
-            val puppies : ProductoResponse? = call.body()
+            val call: Response<ProductoCabecera> = getRetrofit()
+                .create(ApiService::class.java)
+                .getAll(query)
+
+            val puppies : ProductoCabecera? = call.body()
 
             runOnUiThread(){
                 if(call.isSuccessful){
-                    if(puppies != null ){
-                        Log.v("QUERY API " , puppies.image.toString())
-                        productoList.clear()
-                        productoList.add(puppies)
-                        adapter.notifyDataSetChanged()
-                    }else{
-                        Log.e("QUERY API", "Error en la peticion")
-                    }
+                    val productos = puppies?.results?: emptyList()
+                    Log.v("API RESPUESTA",productos.toString())
                 }
             }
         }
     }
 
+    private fun displayData(query: String){
+        CoroutineScope(Dispatchers.IO).launch {
+            val call: Response<ProductoCabecera> = getRetrofit()
+                .create(ApiService::class.java)
+                .getAll(query)
+
+            val response: ProductoCabecera? = call.body()
+
+            runOnUiThread {
+                if(call.isSuccessful){
+                    val productos = response?.results?: emptyList()
+                    productoList.clear()
+                    productoList.addAll(productos)
+                    adapter.notifyDataSetChanged()
+                }
+            }
+        }
+
+
+
+    }
+
     override fun onQueryTextSubmit(query: String?): Boolean {
         if(!query.isNullOrEmpty()){
-            this.getProductoById(query.lowercase())}
+            }
 
         return true
 

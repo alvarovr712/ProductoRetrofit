@@ -6,6 +6,7 @@ import retrofit2.http.Url
 
 interface ApiService {
 
+
     @GET
-    suspend fun getById(@Url url: String) : Response<ProductoResponse>
+    suspend fun getAll(@Url url: String) : Response<ProductoCabecera>
 }

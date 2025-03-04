@@ -11,7 +11,7 @@ class ProductoViewHolder (view: View) : RecyclerView.ViewHolder(view){
     private val binding = ItemProductoBinding.bind(view)
 
     fun bind(productoResponse: ProductoResponse){
-        Picasso.get().load(productoResponse.image).into(binding.ivProducto)
+        Picasso.get().load(productoResponse.image?.replace("http","https")).into(binding.ivProducto)
         binding.tvname.text = productoResponse.name
     }
 }
